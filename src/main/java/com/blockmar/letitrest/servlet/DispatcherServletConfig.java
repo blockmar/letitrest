@@ -2,8 +2,22 @@ package com.blockmar.letitrest.servlet;
 
 import java.util.Set;
 
-public interface DispatcherServletConfig {
+import com.blockmar.letitrest.resolver.UrlResolver;
+import com.blockmar.letitrest.resolver.impl.PatternUrlResolver;
+import com.blockmar.letitrest.views.ViewRenderer;
+import com.blockmar.letitrest.views.impl.FreemarkerConfiguration;
+import com.blockmar.letitrest.views.impl.FreemarkerViewRenderer;
 
-	public Set<Object> getControllers();
+public abstract class DispatcherServletConfig {
+
+	public abstract Set<Object> getControllers();
+
+	public UrlResolver getUrlResolver() {
+		return new PatternUrlResolver();
+	}
+
+	public ViewRenderer getViewRenderer() {
+		return new FreemarkerViewRenderer(new FreemarkerConfiguration());
+	}
 
 }
