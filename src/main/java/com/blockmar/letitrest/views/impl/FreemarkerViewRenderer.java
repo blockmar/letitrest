@@ -10,7 +10,6 @@ import org.eclipse.jetty.util.ByteArrayISO8859Writer;
 
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
-import com.google.inject.Inject;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -20,7 +19,6 @@ public class FreemarkerViewRenderer implements ViewRenderer {
 
 	private final Configuration freeMarkerConfiguration;
 	
-	@Inject
 	public FreemarkerViewRenderer(Configuration freeMarkerConfiguration) {
 		this.freeMarkerConfiguration = freeMarkerConfiguration;
 	}
