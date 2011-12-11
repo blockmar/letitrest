@@ -82,7 +82,7 @@ public class DispatcherServlet extends HttpServlet {
 			throws ServletException, IOException {
 		try {
 			UrlResolverResult urlHandler = urlResolver.resolveUrl(
-					request.getRequestURI(), RequestMethod.GET);
+					request.getRequestURI(), RequestMethod.POST);
 			invokeMethod(urlHandler, request, response);
 		} catch (NoMatchFoundException e) {
 			replyWithError(HttpServletResponse.SC_NOT_FOUND, response);
