@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ public class DispatcherServlet extends HttpServlet {
 	private final UrlResolver urlResolver;
 	private final ViewRenderer viewRenderer;
 
+	@Inject
 	public DispatcherServlet(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
 		this.viewRenderer = servletConfig.getViewRenderer();

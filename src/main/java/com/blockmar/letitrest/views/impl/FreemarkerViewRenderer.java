@@ -3,6 +3,7 @@ package com.blockmar.letitrest.views.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.MimeTypes;
@@ -19,6 +20,11 @@ public class FreemarkerViewRenderer implements ViewRenderer {
 
 	private final Configuration freeMarkerConfiguration;
 	
+	public FreemarkerViewRenderer() {
+		this.freeMarkerConfiguration = new FreemarkerConfiguration();
+	}
+
+	@Inject
 	public FreemarkerViewRenderer(Configuration freeMarkerConfiguration) {
 		this.freeMarkerConfiguration = freeMarkerConfiguration;
 	}
