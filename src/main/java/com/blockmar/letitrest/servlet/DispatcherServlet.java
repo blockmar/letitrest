@@ -21,17 +21,21 @@ import com.blockmar.letitrest.views.ViewRenderer;
 
 public class DispatcherServlet extends HttpServlet {
 
+	private static final String REDIRECT_PREFIX = "redirect:";
+
 	private static final long serialVersionUID = 1L;
 
 	private final Logger logger = Logger.getLogger(getClass());
 
 	private final UrlResolver urlResolver;
-	private final ViewRenderer viewRenderer;
+	private final ViewRenderer defaultViewRenderer;
+	private final ViewRenderer redirectViewRenderer;
 
 	@Inject
 	public DispatcherServlet(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
-		this.viewRenderer = servletConfig.getViewRenderer();
+		this.defaultViewRenderer = servletConfig.getDefaultViewRenderer();
+		this.redirectViewRenderer = servletConfig.getRedirectViewRenderer();
 		registerControllers(servletConfig.getControllers());
 	}
 
@@ -79,18 +83,19 @@ public class DispatcherServlet extends HttpServlet {
 	}
 
 	private void handleRequest(HttpServletRequest request,
-			HttpServletResponse response, RequestMethod requestMethod) throws IOException {
+			HttpServletResponse response, RequestMethod requestMethod)
+			throws IOException {
 		try {
 			UrlResolverResult urlHandler = urlResolver.resolveUrl(
 					request.getRequestURI(), requestMethod);
 			invokeMethod(urlHandler, request, response);
 		} catch (NoMatchFoundException e) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "File Not Found");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND,
+					"File Not Found");
 		} catch (RequestMethodNotSupportedException e) {
 			String msg = "Method not supported";
 			if (request.getProtocol().endsWith("1.1")) {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-						msg);
+				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, msg);
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
 			}
@@ -100,9 +105,12 @@ public class DispatcherServlet extends HttpServlet {
 	private void invokeMethod(UrlResolverResult urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
 		ViewAndModel viewAndModel = invoke(urlHandler, request, response);
-		if (viewAndModel != null) {
+		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
+		if(viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
+			defaultViewRenderer.render(viewAndModel, response);
+		} else {
 			viewRenderer.render(viewAndModel, response);
-		}
+		}		
 	}
 
 	protected ViewAndModel invoke(UrlResolverResult urlHandler,
@@ -132,11 +140,10 @@ public class DispatcherServlet extends HttpServlet {
 				return (ViewAndModel) methodResult;
 			} else if (methodResult instanceof String) {
 				String methodResultString = (String) methodResult;
-				if (!methodResultString.startsWith("redirect: ")) {
+				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
 					return new ViewAndModel(methodResultString);
 				} else {
-					response.sendRedirect(methodResultString.substring(10));
-					return null;
+					return createRedirect(methodResultString);					
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -147,5 +154,12 @@ public class DispatcherServlet extends HttpServlet {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private ViewAndModel createRedirect(String methodResultString) {	
+		String url = methodResultString.substring(REDIRECT_PREFIX.length()).trim();		
+		ViewAndModel viewAndModel = new ViewAndModel(url);
+		viewAndModel.setViewRenderer(redirectViewRenderer);
+		return viewAndModel;
 	}
 }

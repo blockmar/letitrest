@@ -6,6 +6,7 @@ import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.impl.PatternUrlResolver;
 import com.blockmar.letitrest.views.ViewRenderer;
 import com.blockmar.letitrest.views.impl.FreemarkerViewRenderer;
+import com.blockmar.letitrest.views.impl.RedirectViewRenderer;
 
 public abstract class DispatcherServletConfig {
 
@@ -15,8 +16,12 @@ public abstract class DispatcherServletConfig {
 		return new PatternUrlResolver();
 	}
 
-	public ViewRenderer getViewRenderer() {
+	public ViewRenderer getDefaultViewRenderer() {
 		return new FreemarkerViewRenderer();
+	}
+	
+	public ViewRenderer getRedirectViewRenderer() {
+		return new RedirectViewRenderer();
 	}
 
 }
