@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
+import com.blockmar.letitrest.resolver.ForbiddenException;
+import com.blockmar.letitrest.resolver.NotFoundException;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
 
@@ -46,6 +48,38 @@ public class DispatcherServletTest {
 		EasyMock.verify(request, response);
 	}
 	
+	@Test
+	public void controllerThatThrowsNotFoundGenerates404() throws Exception {
+		TestDispatcherServlet servletConfig = new TestDispatcherServlet();
+		DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfig);
+		
+		HttpServletRequest request = EasyMock.createMock(HttpServletRequest.class);
+		EasyMock.expect(request.getRequestURI()).andReturn("/existsbutthrows404");		
+		HttpServletResponse response = EasyMock.createMock(HttpServletResponse.class);
+		response.sendError(404, "Not Found");
+		
+		EasyMock.replay(request, response);
+		
+		dispatcherServlet.doGet(request, response);
+		EasyMock.verify(request, response);
+	}
+	
+	@Test
+	public void controllerThatThrowsForbiddenGenerates403() throws Exception {
+		TestDispatcherServlet servletConfig = new TestDispatcherServlet();
+		DispatcherServlet dispatcherServlet = new DispatcherServlet(servletConfig);
+		
+		HttpServletRequest request = EasyMock.createMock(HttpServletRequest.class);
+		EasyMock.expect(request.getRequestURI()).andReturn("/existsbutthrows403");		
+		HttpServletResponse response = EasyMock.createMock(HttpServletResponse.class);
+		response.sendError(403, "Forbidden");
+		
+		EasyMock.replay(request, response);
+		
+		dispatcherServlet.doGet(request, response);
+		EasyMock.verify(request, response);
+	}
+	
 	private class TestDispatcherServlet extends DispatcherServletConfig {
 		@Override
 		public Set<Object> getControllers() {
@@ -76,6 +110,16 @@ public class DispatcherServletTest {
 		@RequestMapping("/redirect")
 		public String redirect() {
 			return "redirect: /";
+		}
+		
+		@RequestMapping("/existsbutthrows404")
+		public String throw404() {
+			throw new NotFoundException();
+		}
+		
+		@RequestMapping("/existsbutthrows403")
+		public String throw403() {
+			throw new ForbiddenException();
 		}
 	}
 }

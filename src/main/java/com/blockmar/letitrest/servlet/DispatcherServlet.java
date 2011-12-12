@@ -1,6 +1,7 @@
 package com.blockmar.letitrest.servlet;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -12,7 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.blockmar.letitrest.resolver.NoMatchFoundException;
+import com.blockmar.letitrest.resolver.ForbiddenException;
+import com.blockmar.letitrest.resolver.NotFoundException;
 import com.blockmar.letitrest.resolver.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
@@ -89,28 +91,43 @@ public class DispatcherServlet extends HttpServlet {
 			UrlResolverResult urlHandler = urlResolver.resolveUrl(
 					request.getRequestURI(), requestMethod);
 			invokeMethod(urlHandler, request, response);
-		} catch (NoMatchFoundException e) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,
-					"File Not Found");
+		} catch (NotFoundException e) {
+			sendNotFound(response, e.getMessage());
+		} catch (ForbiddenException e) {
+			sendForbidden(response, e.getMessage());
 		} catch (RequestMethodNotSupportedException e) {
+			logger.info(e.getMessage());
 			String msg = "Method not supported";
 			if (request.getProtocol().endsWith("1.1")) {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, msg);
+				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+						msg);
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
 			}
 		}
 	}
 
+	private void sendNotFound(HttpServletResponse response, String message)
+			throws IOException {
+		logger.info(message);
+		response.sendError(HttpServletResponse.SC_NOT_FOUND, "Not Found");
+	}
+
+	private void sendForbidden(HttpServletResponse response, String message)
+			throws IOException {
+		logger.info(message);
+		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+	}
+
 	private void invokeMethod(UrlResolverResult urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
 		ViewAndModel viewAndModel = invoke(urlHandler, request, response);
 		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
-		if(viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
+		if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
 			defaultViewRenderer.render(viewAndModel, response);
 		} else {
 			viewRenderer.render(viewAndModel, response);
-		}		
+		}
 	}
 
 	protected ViewAndModel invoke(UrlResolverResult urlHandler,
@@ -143,7 +160,7 @@ public class DispatcherServlet extends HttpServlet {
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
 					return new ViewAndModel(methodResultString);
 				} else {
-					return createRedirect(methodResultString);					
+					return createRedirect(methodResultString);
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -151,13 +168,20 @@ public class DispatcherServlet extends HttpServlet {
 								+ method.getReturnType().toString());
 			}
 
+		} catch (InvocationTargetException e) {
+			Throwable cause = e.getCause();
+			if(cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			}
+			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private ViewAndModel createRedirect(String methodResultString) {	
-		String url = methodResultString.substring(REDIRECT_PREFIX.length()).trim();		
+	private ViewAndModel createRedirect(String methodResultString) {
+		String url = methodResultString.substring(REDIRECT_PREFIX.length())
+				.trim();
 		ViewAndModel viewAndModel = new ViewAndModel(url);
 		viewAndModel.setViewRenderer(redirectViewRenderer);
 		return viewAndModel;

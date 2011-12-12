@@ -10,5 +10,5 @@ public interface UrlResolver {
 	
 	public void registerUrl(String url, Object classInstance, Method method, RequestMethod... requestMethods);
 	
-	public UrlResolverResult resolveUrl(String url, RequestMethod method) throws NoMatchFoundException;
+	public UrlResolverResult resolveUrl(String url, RequestMethod method) throws NotFoundException;
 }

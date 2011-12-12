@@ -18,7 +18,7 @@ public class PatternUrlResolverTest {
 		assertEquals("1234", resolveUrl.getUrlParameters()[0]);
 	}
 	
-	@Test(expected=NoMatchFoundException.class)
+	@Test(expected=NotFoundException.class)
 	public void throwsExceptionIfNoMatchFound() throws Exception {
 		UrlResolver resolver = new PatternUrlResolver();
 		resolver.registerUrl("/test", null, null, RequestMethod.GET);

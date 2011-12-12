@@ -7,7 +7,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.blockmar.letitrest.resolver.NoMatchFoundException;
+import com.blockmar.letitrest.resolver.NotFoundException;
 import com.blockmar.letitrest.resolver.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
@@ -22,7 +22,7 @@ public class PatternUrlResolver implements UrlResolver {
 
 	@Override
 	public UrlResolverResult resolveUrl(String url, RequestMethod method)
-			throws NoMatchFoundException {
+			throws NotFoundException {
 
 		//TODO Is this good or just a performance theif.
 		//Create a list of candidates, this allows different matches for GET and POST and
@@ -42,7 +42,7 @@ public class PatternUrlResolver implements UrlResolver {
 		}
 
 		if (candidates.size() == 0) {
-			throw new NoMatchFoundException("No mapping found for URL: " + url);
+			throw new NotFoundException("No mapping found for URL: " + url);
 		}
 
 		for (PatternAndHandler patternAndHandler : candidates) {
