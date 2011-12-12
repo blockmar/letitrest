@@ -5,11 +5,21 @@ import java.util.Map;
 
 public class ViewAndModel {
 
+	public static final ViewRenderer DEFAULT_VIEW_RENDERER = null;
+	
 	private final String view;
-	private final Map<String, Object> model = new HashMap<String, Object>();
+	private final Map<String, Object> model;
+	
+	private ViewRenderer viewRenderer = DEFAULT_VIEW_RENDERER;
 	
 	public ViewAndModel(String view) {
 		this.view = view;
+		this.model = new HashMap<String, Object>();
+	}
+	
+	public ViewAndModel(String view, Map<String, Object> model) {
+		this.view = view;
+		this.model = model;
 	}
 	
 	public String getView() {
@@ -17,6 +27,7 @@ public class ViewAndModel {
 	}
 
 	public Map<String, Object> getModel() {
+		//TODO Return unmodifiable Map
 		return model;
 	}
 
@@ -26,5 +37,13 @@ public class ViewAndModel {
 	
 	public void addAllAttributes(Map<String, Object> model) {
 		model.putAll(model);
+	}
+	
+	public void setViewRenderer(ViewRenderer viewRenderer) {
+		this.viewRenderer = viewRenderer;
+	}
+	
+	public ViewRenderer getViewRenderer() {
+		return viewRenderer;
 	}
 }

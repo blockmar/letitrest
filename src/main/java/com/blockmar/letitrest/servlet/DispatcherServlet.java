@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.blockmar.letitrest.resolver.NoMatchFoundException;
+import com.blockmar.letitrest.resolver.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
 import com.blockmar.letitrest.views.ViewAndModel;
@@ -40,6 +41,7 @@ public class DispatcherServlet extends HttpServlet {
 		}
 	}
 
+	// TODO Scan for fallback mapping
 	private void registerController(Object controller) {
 		logger.debug("Scanning: " + controller.getClass().getCanonicalName());
 		Method[] methods = controller.getClass().getMethods();
@@ -67,30 +69,32 @@ public class DispatcherServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		try {
-			UrlResolverResult urlHandler = urlResolver.resolveUrl(
-					request.getRequestURI(), RequestMethod.GET);
-			invokeMethod(urlHandler, request, response);
-		} catch (NoMatchFoundException e) {
-			replyWithError(HttpServletResponse.SC_NOT_FOUND, response);
-		}
+		handleRequest(request, response, RequestMethod.GET);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response)
-			throws ServletException, IOException {
-		try {
-			UrlResolverResult urlHandler = urlResolver.resolveUrl(
-					request.getRequestURI(), RequestMethod.POST);
-			invokeMethod(urlHandler, request, response);
-		} catch (NoMatchFoundException e) {
-			replyWithError(HttpServletResponse.SC_NOT_FOUND, response);
-		}
+			HttpServletResponse response) throws ServletException, IOException {
+		handleRequest(request, response, RequestMethod.POST);
 	}
 
-	private void replyWithError(int errorStatus, HttpServletResponse response) {
-		response.setStatus(errorStatus);
+	private void handleRequest(HttpServletRequest request,
+			HttpServletResponse response, RequestMethod requestMethod) throws IOException {
+		try {
+			UrlResolverResult urlHandler = urlResolver.resolveUrl(
+					request.getRequestURI(), requestMethod);
+			invokeMethod(urlHandler, request, response);
+		} catch (NoMatchFoundException e) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "File Not Found");
+		} catch (RequestMethodNotSupportedException e) {
+			String msg = "Method not supported";
+			if (request.getProtocol().endsWith("1.1")) {
+				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+						msg);
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+			}
+		}
 	}
 
 	private void invokeMethod(UrlResolverResult urlHandler,
@@ -123,7 +127,7 @@ public class DispatcherServlet extends HttpServlet {
 							"Can't handle methods with this signature.");
 				}
 			}
-			
+
 			if (methodResult instanceof ViewAndModel) {
 				return (ViewAndModel) methodResult;
 			} else if (methodResult instanceof String) {
