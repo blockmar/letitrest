@@ -8,7 +8,7 @@ public interface UrlResolver {
 	
 	public void registerUrl(String url, Object classInstance, Method method);
 	
-	public void registerUrl(String url, Object classInstance, Method method, RequestMethod[] methods);
+	public void registerUrl(String url, Object classInstance, Method method, RequestMethod... requestMethods);
 	
 	public UrlResolverResult resolveUrl(String url, RequestMethod method) throws NoMatchFoundException;
 }

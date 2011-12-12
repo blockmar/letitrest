@@ -68,10 +68,10 @@ public class PatternUrlResolver implements UrlResolver {
 
 	@Override
 	public void registerUrl(String urlPattern, Object classInstance,
-			Method method, RequestMethod[] methods) {
+			Method method, RequestMethod... requestMethods) {
 		Pattern pattern = Pattern.compile("^" + urlPattern + "$");
 		PatternAndHandler patternAndHandler = new PatternAndHandler(pattern,
-				methods, classInstance, method);
+				requestMethods, classInstance, method);
 		urls.add(patternAndHandler);
 	}
 
