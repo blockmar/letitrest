@@ -1,11 +1,15 @@
-package com.blockmar.letitrest.resolver;
+package com.blockmar.letitrest.resolver.regexp;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.blockmar.letitrest.resolver.impl.PatternUrlResolver;
-import com.blockmar.letitrest.servlet.RequestMethod;
+import com.blockmar.letitrest.request.RequestMethod;
+import com.blockmar.letitrest.request.exception.NotFoundException;
+import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
+import com.blockmar.letitrest.resolver.UrlResolver;
+import com.blockmar.letitrest.resolver.UrlResolverResult;
+import com.blockmar.letitrest.resolver.regexp.PatternUrlResolver;
 
 public class PatternUrlResolverTest {
 	

@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.servlet;
+package com.blockmar.letitrest.request;
 
 public enum RequestMethod {
 	GET, POST

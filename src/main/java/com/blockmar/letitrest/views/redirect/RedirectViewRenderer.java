@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.views.impl;
+package com.blockmar.letitrest.views.redirect;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.views.impl;
+package com.blockmar.letitrest.views.freemarker;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +31,8 @@ public class FreemarkerViewRenderer implements ViewRenderer {
 	
 	@Override
 	public void render(ViewAndModel viewAndModel, HttpServletResponse response) {
+		
+		//TODO Really use ISO8859-1?? Why not UTF-8?
 		
 		ByteArrayISO8859Writer writer = new ByteArrayISO8859Writer(1500);
 		

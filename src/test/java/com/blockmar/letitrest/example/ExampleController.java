@@ -1,6 +1,6 @@
 package com.blockmar.letitrest.example;
 
-import com.blockmar.letitrest.servlet.RequestMapping;
+import com.blockmar.letitrest.request.annotation.RequestMapping;
 import com.blockmar.letitrest.views.ViewAndModel;
 
 public class ExampleController {

@@ -13,9 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import com.blockmar.letitrest.resolver.ForbiddenException;
-import com.blockmar.letitrest.resolver.NotFoundException;
-import com.blockmar.letitrest.resolver.RequestMethodNotSupportedException;
+import com.blockmar.letitrest.request.RequestMethod;
+import com.blockmar.letitrest.request.annotation.RequestMapping;
+import com.blockmar.letitrest.request.exception.ForbiddenException;
+import com.blockmar.letitrest.request.exception.NotFoundException;
+import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
 import com.blockmar.letitrest.views.ViewAndModel;

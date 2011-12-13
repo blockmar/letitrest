@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.resolver;
+package com.blockmar.letitrest.request.exception;
 
 public class NotFoundException extends RuntimeException {
 

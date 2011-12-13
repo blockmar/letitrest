@@ -9,8 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import com.blockmar.letitrest.resolver.ForbiddenException;
-import com.blockmar.letitrest.resolver.NotFoundException;
+import com.blockmar.letitrest.request.annotation.RequestMapping;
+import com.blockmar.letitrest.request.exception.ForbiddenException;
+import com.blockmar.letitrest.request.exception.NotFoundException;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
 

@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.resolver.impl;
+package com.blockmar.letitrest.resolver.regexp;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -7,11 +7,11 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.blockmar.letitrest.resolver.NotFoundException;
-import com.blockmar.letitrest.resolver.RequestMethodNotSupportedException;
+import com.blockmar.letitrest.request.RequestMethod;
+import com.blockmar.letitrest.request.exception.NotFoundException;
+import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
-import com.blockmar.letitrest.servlet.RequestMethod;
 
 public class PatternUrlResolver implements UrlResolver {
 

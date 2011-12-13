@@ -1,4 +1,4 @@
-package com.blockmar.letitrest.views.impl;
+package com.blockmar.letitrest.views.freemarker;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.TemplateLoader;
