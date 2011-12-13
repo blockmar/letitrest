@@ -1,5 +1,7 @@
 package com.blockmar.letitrest.example;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.blockmar.letitrest.request.annotation.RequestMapping;
 import com.blockmar.letitrest.views.ViewAndModel;
 
@@ -10,13 +12,13 @@ public class ExampleController {
 		return new ViewAndModel("index");
 	}
 	
-// Not implemented	
-//	@RequestMapping("/name")
-//	public ViewAndModel yourName(String name) {
-//		ViewAndModel viewAndModel = new ViewAndModel("name");
-//		viewAndModel.addAttribute("name", name);
-//		return viewAndModel;
-//	}
+	@RequestMapping("/name")
+	public ViewAndModel yourName(HttpServletRequest request) {
+		String name = request.getParameter("name");
+		ViewAndModel viewAndModel = new ViewAndModel("name");
+		viewAndModel.addAttribute("name", name);
+		return viewAndModel;
+	}
 	
 	@RequestMapping("/page/([0-9]+)")
 	public ViewAndModel pageNumber(String page) {
