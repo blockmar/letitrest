@@ -14,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import com.blockmar.letitrest.request.RequestMethod;
-import com.blockmar.letitrest.request.annotation.RequestMapping;
 import com.blockmar.letitrest.request.exception.ForbiddenException;
 import com.blockmar.letitrest.request.exception.NotFoundException;
 import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
+import com.blockmar.letitrest.resolver.AnnotationScanner;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.UrlResolverResult;
 import com.blockmar.letitrest.views.ViewAndModel;
@@ -25,10 +25,10 @@ import com.blockmar.letitrest.views.ViewRenderer;
 
 public class DispatcherServlet extends HttpServlet {
 
-	private static final String REDIRECT_PREFIX = "redirect:";
-
 	private static final long serialVersionUID = 1L;
-
+	
+	private static final String REDIRECT_PREFIX = "redirect:";
+	
 	private final Logger logger = Logger.getLogger(getClass());
 
 	private final UrlResolver urlResolver;
@@ -44,33 +44,9 @@ public class DispatcherServlet extends HttpServlet {
 	}
 
 	private void registerControllers(Set<Object> controllers) {
+		AnnotationScanner scanner = new AnnotationScanner(urlResolver);
 		for (Object controller : controllers) {
-			registerController(controller);
-		}
-	}
-
-	// TODO Scan for fallback mapping
-	private void registerController(Object controller) {
-		logger.debug("Scanning: " + controller.getClass().getCanonicalName());
-		Method[] methods = controller.getClass().getMethods();
-		for (Method method : methods) {
-			RequestMapping requestMapping = method
-					.getAnnotation(RequestMapping.class);
-			if (requestMapping != null) {
-				String url = requestMapping.value();
-				RequestMethod[] requestMethods = requestMapping.requestMethod();
-				if (requestMethods.length == 0) {
-					logger.debug("Regestering " + requestMapping.value()
-							+ " to method " + method.getName());
-					urlResolver.registerUrl(url, controller, method);
-				} else {
-					logger.debug("Regestering " + requestMapping.value()
-							+ " to method " + method.getName()
-							+ ", request methods: " + requestMethods);
-					urlResolver.registerUrl(url, controller, method,
-							requestMethods);
-				}
-			}
+			scanner.scan(controller);
 		}
 	}
 
