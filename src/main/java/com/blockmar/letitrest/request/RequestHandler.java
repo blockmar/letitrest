@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,6 +27,7 @@ public class RequestHandler {
 	private final ViewRenderer redirectViewRenderer;
 	private final ViewRenderer jsonViewRenderer;
 	
+	@Inject
 	public RequestHandler(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
 		this.defaultViewRenderer = servletConfig.getDefaultViewRenderer();

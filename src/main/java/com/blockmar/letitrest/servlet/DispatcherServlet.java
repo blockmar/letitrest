@@ -25,8 +25,14 @@ public class DispatcherServlet extends HttpServlet {
 
 	private final Logger logger = Logger.getLogger(getClass());
 
-	private final RequestHandler requestHandler;
+	private RequestHandler requestHandler;
 
+	/**
+	 * Used by servlet container, requires call to init(ServletConfig). 
+	 */
+	public DispatcherServlet() {		
+	}
+	
 	@Inject
 	public DispatcherServlet(DispatcherServletConfig servletConfig) {
 		this.requestHandler = new RequestHandler(servletConfig);
@@ -35,6 +41,24 @@ public class DispatcherServlet extends HttpServlet {
 	public DispatcherServlet(RequestHandler requestHandler) {
 		this.requestHandler = requestHandler;
 	}
+
+	@Override
+	public void init() throws ServletException {
+		String initParameter = getServletConfig().getInitParameter("servletConfig");
+		if(initParameter == null) {
+			throw new IllegalArgumentException("Init paramter servletConfig is missing!");
+		}		
+		Object servletConfig;
+		try {
+			servletConfig = getClass().getClassLoader().loadClass(initParameter).newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		if(!(servletConfig instanceof DispatcherServletConfig)) {
+			throw new IllegalArgumentException("Class servlet-config not of type DispatcherServletConfig!");
+		}
+		this.requestHandler = new RequestHandler((DispatcherServletConfig)servletConfig);
+    }
 
 	@Override
 	protected void doGet(HttpServletRequest request,
