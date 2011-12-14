@@ -23,6 +23,7 @@ import com.blockmar.letitrest.resolver.UrlResolverResult;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
 
+//TODO This needs refactoring
 public class DispatcherServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -32,6 +33,7 @@ public class DispatcherServlet extends HttpServlet {
 	private final Logger logger = Logger.getLogger(getClass());
 
 	private final UrlResolver urlResolver;
+
 	private final ViewRenderer defaultViewRenderer;
 	private final ViewRenderer redirectViewRenderer;
 	private final ViewRenderer jsonViewRenderer;
@@ -68,22 +70,27 @@ public class DispatcherServlet extends HttpServlet {
 			HttpServletResponse response, RequestMethod requestMethod)
 			throws IOException {
 		try {
-			UrlResolverResult urlHandler = urlResolver.resolveUrl(
-					request.getRequestURI(), requestMethod);
-			invokeMethod(urlHandler, request, response);
+			String requestURI = request.getRequestURI();
+			UrlResolverResult urlHandler = urlResolver.resolveUrl(requestURI,
+					requestMethod);
+			renderUrlHandler(urlHandler, request, response);
 		} catch (NotFoundException e) {
 			sendNotFound(response, e.getMessage());
 		} catch (ForbiddenException e) {
 			sendForbidden(response, e.getMessage());
 		} catch (RequestMethodNotSupportedException e) {
-			logger.info(e.getMessage());
-			String msg = "Method not supported";
-			if (request.getProtocol().endsWith("1.1")) {
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-						msg);
-			} else {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
-			}
+			sendMethodNotSupported(response, request, e.getMessage());
+		}
+	}
+
+	private void sendMethodNotSupported(HttpServletResponse response,
+			HttpServletRequest request, String message) throws IOException {
+		logger.info(message);
+		String msg = "Method not supported";
+		if (request.getProtocol().endsWith("1.1")) {
+			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, msg);
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
 		}
 	}
 
@@ -99,7 +106,7 @@ public class DispatcherServlet extends HttpServlet {
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
 	}
 
-	private void invokeMethod(UrlResolverResult urlHandler,
+	private void renderUrlHandler(UrlResolverResult urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
 		ViewAndModel viewAndModel = invoke(urlHandler, request);
 		render(viewAndModel, response);
@@ -118,32 +125,15 @@ public class DispatcherServlet extends HttpServlet {
 			HttpServletRequest request) {
 
 		try {
-			Object methodResult;
-			Method method = urlHandler.getMethod();
-			Class<?>[] parameterTypes = method.getParameterTypes();
-			if (parameterTypes.length == 0) {
-				methodResult = method.invoke(urlHandler.getInstance());
-			} else if (parameterTypes.length == 1
-					&& parameterTypes[0].equals(HttpServletRequest.class)) {
-				methodResult = method.invoke(urlHandler.getInstance(), request);
-			} else {
-				String[] urlParams = urlHandler.getUrlParameters();
-				if (parameterTypes.length == urlParams.length) {
-					methodResult = method.invoke(urlHandler.getInstance(),
-							(Object[]) urlParams);
-				} else {
-					throw new UnsupportedOperationException(
-							"Can't handle methods with this signature.");
-				}
-			}
+			Object methodResult = invokeMethod(urlHandler, request);
 
 			if (methodResult instanceof ViewAndModel) {
 				ViewAndModel viewAndModel = (ViewAndModel) methodResult;
-				//TODO Not a good solution
-				if("json".equals(viewAndModel.getView().toLowerCase())) {
+				// TODO Not a good solution
+				if ("json".equals(viewAndModel.getView().toLowerCase())) {
 					viewAndModel.setViewRenderer(jsonViewRenderer);
 				}
-				return viewAndModel;				
+				return viewAndModel;
 			} else if (methodResult instanceof String) {
 				String methodResultString = (String) methodResult;
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
@@ -154,7 +144,8 @@ public class DispatcherServlet extends HttpServlet {
 			} else {
 				throw new UnsupportedOperationException(
 						"Can't handle methods with return type: "
-								+ method.getReturnType().toString());
+								+ urlHandler.getMethod().getReturnType()
+										.toString());
 			}
 
 		} catch (InvocationTargetException e) {
@@ -166,6 +157,30 @@ public class DispatcherServlet extends HttpServlet {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private Object invokeMethod(UrlResolverResult urlHandler,
+			HttpServletRequest request) throws IllegalAccessException,
+			InvocationTargetException {
+		Object methodResult;
+		Method method = urlHandler.getMethod();
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		if (parameterTypes.length == 0) {
+			methodResult = method.invoke(urlHandler.getInstance());
+		} else if (parameterTypes.length == 1
+				&& parameterTypes[0].equals(HttpServletRequest.class)) {
+			methodResult = method.invoke(urlHandler.getInstance(), request);
+		} else {
+			String[] urlParams = urlHandler.getUrlParameters();
+			if (parameterTypes.length == urlParams.length) {
+				methodResult = method.invoke(urlHandler.getInstance(),
+						(Object[]) urlParams);
+			} else {
+				throw new UnsupportedOperationException(
+						"Can't handle methods with this signature.");
+			}
+		}
+		return methodResult;
 	}
 
 	private ViewAndModel createRedirect(String methodResultString) {
