@@ -26,20 +26,22 @@ import com.blockmar.letitrest.views.ViewRenderer;
 public class DispatcherServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final String REDIRECT_PREFIX = "redirect:";
-	
+
 	private final Logger logger = Logger.getLogger(getClass());
 
 	private final UrlResolver urlResolver;
 	private final ViewRenderer defaultViewRenderer;
 	private final ViewRenderer redirectViewRenderer;
+	private final ViewRenderer jsonViewRenderer;
 
 	@Inject
 	public DispatcherServlet(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
 		this.defaultViewRenderer = servletConfig.getDefaultViewRenderer();
 		this.redirectViewRenderer = servletConfig.getRedirectViewRenderer();
+		this.jsonViewRenderer = servletConfig.getJsonViewRenderer();
 		registerControllers(servletConfig.getControllers());
 	}
 
@@ -99,7 +101,11 @@ public class DispatcherServlet extends HttpServlet {
 
 	private void invokeMethod(UrlResolverResult urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
-		ViewAndModel viewAndModel = invoke(urlHandler, request, response);
+		ViewAndModel viewAndModel = invoke(urlHandler, request);
+		render(viewAndModel, response);
+	}
+
+	private void render(ViewAndModel viewAndModel, HttpServletResponse response) {
 		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
 		if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
 			defaultViewRenderer.render(viewAndModel, response);
@@ -109,7 +115,7 @@ public class DispatcherServlet extends HttpServlet {
 	}
 
 	protected ViewAndModel invoke(UrlResolverResult urlHandler,
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest request) {
 
 		try {
 			Object methodResult;
@@ -132,7 +138,12 @@ public class DispatcherServlet extends HttpServlet {
 			}
 
 			if (methodResult instanceof ViewAndModel) {
-				return (ViewAndModel) methodResult;
+				ViewAndModel viewAndModel = (ViewAndModel) methodResult;
+				//TODO Not a good solution
+				if("json".equals(viewAndModel.getView().toLowerCase())) {
+					viewAndModel.setViewRenderer(jsonViewRenderer);
+				}
+				return viewAndModel;				
 			} else if (methodResult instanceof String) {
 				String methodResultString = (String) methodResult;
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
@@ -148,7 +159,7 @@ public class DispatcherServlet extends HttpServlet {
 
 		} catch (InvocationTargetException e) {
 			Throwable cause = e.getCause();
-			if(cause instanceof RuntimeException) {
+			if (cause instanceof RuntimeException) {
 				throw (RuntimeException) cause;
 			}
 			throw new RuntimeException(e);
