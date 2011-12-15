@@ -18,7 +18,8 @@ public class DispatcherServletTest {
 	@Test
 	public void handlerNotFoundExceptionGenerates404() throws Exception {
 		RequestHandler requestHandler = new TestRequestHandler(new NotFoundException());
-		DispatcherServlet dispatcherServlet = new DispatcherServlet(requestHandler);
+		TestDispatcherServletConfig config = new TestDispatcherServletConfig(requestHandler);
+		DispatcherServlet dispatcherServlet = new DispatcherServlet(config);
 		
 		HttpServletRequest request = EasyMock.createMock(HttpServletRequest.class);
 		HttpServletResponse response = EasyMock.createMock(HttpServletResponse.class);
@@ -33,7 +34,8 @@ public class DispatcherServletTest {
 	@Test
 	public void handlerForbiddenExceptionGenerates403() throws Exception {
 		RequestHandler requestHandler = new TestRequestHandler(new ForbiddenException());
-		DispatcherServlet dispatcherServlet = new DispatcherServlet(requestHandler);
+		TestDispatcherServletConfig config = new TestDispatcherServletConfig(requestHandler);
+		DispatcherServlet dispatcherServlet = new DispatcherServlet(config);
 		
 		HttpServletRequest request = EasyMock.createMock(HttpServletRequest.class);
 		HttpServletResponse response = EasyMock.createMock(HttpServletResponse.class);
@@ -67,6 +69,25 @@ public class DispatcherServletTest {
 		public void handle(HttpServletRequest request,
 				HttpServletResponse response) {
 			throw e;
+		}
+	}
+	
+	private class TestDispatcherServletConfig extends DispatcherServletConfig {
+		
+		private final RequestHandler requestHandler;
+		
+		public TestDispatcherServletConfig(RequestHandler requestHandler) {
+			this.requestHandler = requestHandler;
+		}
+
+		@Override
+		public Set<Object> getControllers() {
+			return null;
+		}
+		
+		@Override
+		public RequestHandler getRequestHandler() {
+			return requestHandler;
 		}
 	}
 }

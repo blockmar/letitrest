@@ -19,46 +19,41 @@ public class DispatcherServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String ERROR_FORBIDDEN = "Forbidden";
-	private static final String ERROR_NOT_FOUND = "Not Found";
-	private static final String ERROR_METHOD_NOT_SUPPORTED = "Method not supported";
+	private static final String SERVLET_CONFIG_PARAMETER = "servletConfig";
+
+	private static final String ERROR_SERVLET_CONFIG_INCORRECT_TYPE = "Class servlet-config not of type DispatcherServletConfig!";
+	private static final String ERROR_SERVLET_CONFIG_PARAMETER_MISSING = "Init paramter servletConfig is missing!";
+
+	private static final String HTTP_ERROR_FORBIDDEN = "Forbidden";
+	private static final String HTTP_ERROR_NOT_FOUND = "Not Found";
+	private static final String HTTP_ERROR_METHOD_NOT_SUPPORTED = "Method not supported";
 
 	private final Logger logger = Logger.getLogger(getClass());
 
+	private DispatcherServletConfig servletConfig;
 	private RequestHandler requestHandler;
 
 	/**
-	 * Used by servlet container, requires call to init(ServletConfig). 
+	 * Used by servlet container, requires call to init(ServletConfig).
 	 */
-	public DispatcherServlet() {		
+	public DispatcherServlet() {
+		super();
 	}
-	
+
 	@Inject
 	public DispatcherServlet(DispatcherServletConfig servletConfig) {
-		this.requestHandler = new RequestHandler(servletConfig);
-	}
-	
-	public DispatcherServlet(RequestHandler requestHandler) {
-		this.requestHandler = requestHandler;
+		super();
+		this.servletConfig = servletConfig;
+		this.requestHandler = servletConfig.getRequestHandler();
 	}
 
 	@Override
 	public void init() throws ServletException {
-		String initParameter = getServletConfig().getInitParameter("servletConfig");
-		if(initParameter == null) {
-			throw new IllegalArgumentException("Init paramter servletConfig is missing!");
+		if(servletConfig == null) {
+			servletConfig = getServletConfigFromInitParameter();
+			requestHandler = servletConfig.getRequestHandler();
 		}		
-		Object servletConfig;
-		try {
-			servletConfig = getClass().getClassLoader().loadClass(initParameter).newInstance();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		if(!(servletConfig instanceof DispatcherServletConfig)) {
-			throw new IllegalArgumentException("Class servlet-config not of type DispatcherServletConfig!");
-		}
-		this.requestHandler = new RequestHandler((DispatcherServletConfig)servletConfig);
-    }
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest request,
@@ -90,22 +85,44 @@ public class DispatcherServlet extends HttpServlet {
 		logger.info(message);
 		if (request.getProtocol().endsWith("1.1")) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-					ERROR_METHOD_NOT_SUPPORTED);
+					HTTP_ERROR_METHOD_NOT_SUPPORTED);
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					ERROR_METHOD_NOT_SUPPORTED);
+					HTTP_ERROR_METHOD_NOT_SUPPORTED);
 		}
 	}
 
 	private void sendNotFound(HttpServletResponse response, String message)
 			throws IOException {
 		logger.info(message);
-		response.sendError(HttpServletResponse.SC_NOT_FOUND, ERROR_NOT_FOUND);
+		response.sendError(HttpServletResponse.SC_NOT_FOUND,
+				HTTP_ERROR_NOT_FOUND);
 	}
 
 	private void sendForbidden(HttpServletResponse response, String message)
 			throws IOException {
 		logger.info(message);
-		response.sendError(HttpServletResponse.SC_FORBIDDEN, ERROR_FORBIDDEN);
+		response.sendError(HttpServletResponse.SC_FORBIDDEN,
+				HTTP_ERROR_FORBIDDEN);
+	}
+
+	private DispatcherServletConfig getServletConfigFromInitParameter()
+			throws ServletException {
+		String initParameter = getServletConfig().getInitParameter(
+				SERVLET_CONFIG_PARAMETER);
+		if (initParameter == null) {
+			throw new ServletException(ERROR_SERVLET_CONFIG_PARAMETER_MISSING);
+		}
+		Object servletConfig;
+		try {
+			servletConfig = getClass().getClassLoader()
+					.loadClass(initParameter).newInstance();
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+		if (!(servletConfig instanceof DispatcherServletConfig)) {
+			throw new ServletException(ERROR_SERVLET_CONFIG_INCORRECT_TYPE);
+		}
+		return (DispatcherServletConfig) servletConfig;
 	}
 }

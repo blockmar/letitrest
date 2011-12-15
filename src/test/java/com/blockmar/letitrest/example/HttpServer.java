@@ -12,14 +12,14 @@ import com.blockmar.letitrest.servlet.DispatcherServletConfig;
 public class HttpServer {
 	
 	private static final String HOSTNAME = "localhost";
-	private static final int POST = 8080;
+	private static final int PORT = 8080;
 
 	public static void main(String[] args) {
 		
 		DispatcherServletConfig config = new ExampleDispatcherServletConfig();
 		DispatcherServlet servlet = new DispatcherServlet(config);
 		
-		InetSocketAddress  addr = new InetSocketAddress(HOSTNAME, POST);
+		InetSocketAddress  addr = new InetSocketAddress(HOSTNAME, PORT);
 		Server server = new Server(addr);
 		
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
