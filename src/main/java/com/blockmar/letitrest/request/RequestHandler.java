@@ -16,29 +16,28 @@ import com.blockmar.letitrest.servlet.DispatcherServletConfig;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
 import com.blockmar.letitrest.views.json.JsonViewAndModel;
-import com.blockmar.letitrest.views.redirect.RedirectViewAndModel;
-import com.blockmar.letitrest.views.redirect.RedirectViewRenderer;
+import com.blockmar.letitrest.views.redirect.Redirect;
 
 //TODO Refactoring. Can we split this to single responsibility?
 public class RequestHandler {
-	
+
 	private static final String REDIRECT_PREFIX = "redirect:";
-	
+
 	private final UrlResolver urlResolver;
-	
+
 	private final ViewRenderer defaultViewRenderer;
 	private final ViewRenderer redirectViewRenderer;
 	private final ViewRenderer jsonViewRenderer;
-	
+
 	@Inject
 	public RequestHandler(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
 		this.defaultViewRenderer = servletConfig.getDefaultViewRenderer();
 		this.redirectViewRenderer = servletConfig.getRedirectViewRenderer();
 		this.jsonViewRenderer = servletConfig.getJsonViewRenderer();
-		
+
 		registerControllers(servletConfig.getControllers());
-	}	
+	}
 
 	public void handle(HttpServletRequest request, HttpServletResponse response) {
 		RequestMethod requestMethod = getRequestMethod(request);
@@ -47,13 +46,14 @@ public class RequestHandler {
 				requestMethod);
 		renderUrlHandler(urlHandler, request, response);
 	}
-	
+
 	private RequestMethod getRequestMethod(HttpServletRequest request) {
 		String method = request.getMethod();
 		try {
 			return RequestMethod.valueOf(method);
 		} catch (Exception e) {
-			throw new RequestMethodNotSupportedException("Method not supported: " + method);
+			throw new RequestMethodNotSupportedException(
+					"Method not supported: " + method);
 		}
 	}
 
@@ -63,30 +63,28 @@ public class RequestHandler {
 			scanner.scan(controller);
 		}
 	}
-	
+
 	private void renderUrlHandler(UrlResolverResult urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
 		ViewAndModel viewAndModel = invoke(urlHandler, request);
 		render(viewAndModel, response);
 	}
-	
+
 	private void render(ViewAndModel viewAndModel, HttpServletResponse response) {
 		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
 		if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
-			if(viewRenderer instanceof RedirectViewRenderer) {
+			if (viewAndModel instanceof Redirect) {
 				redirectViewRenderer.render(viewAndModel, response);
-			}
-			else if(viewAndModel instanceof JsonViewAndModel) {
+			} else if (viewAndModel instanceof JsonViewAndModel) {
 				jsonViewRenderer.render(viewAndModel, response);
-			}
-			else {
+			} else {
 				defaultViewRenderer.render(viewAndModel, response);
 			}
 		} else {
 			viewRenderer.render(viewAndModel, response);
 		}
 	}
-	
+
 	private ViewAndModel invoke(UrlResolverResult urlHandler,
 			HttpServletRequest request) {
 
@@ -100,7 +98,7 @@ public class RequestHandler {
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
 					return new ViewAndModel(methodResultString);
 				} else {
-					return new RedirectViewAndModel(methodResultString);
+					return new Redirect(stripRedirectPrefix(methodResultString));
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -118,6 +116,10 @@ public class RequestHandler {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String stripRedirectPrefix(String redirect) {
+		return redirect.substring(REDIRECT_PREFIX.length()).trim();
 	}
 
 	private Object invokeMethod(UrlResolverResult urlHandler,

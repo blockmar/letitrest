@@ -17,5 +17,6 @@
 <ul>
     <li><a href="/name">Tell me your name</a></li>
 </ul>
+<p>Json data: <a href="/json">Example</a></p>
 </body>
 </html>

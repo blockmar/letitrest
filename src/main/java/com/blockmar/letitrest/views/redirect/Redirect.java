@@ -4,8 +4,8 @@ import java.util.Map;
 
 import com.blockmar.letitrest.views.ViewAndModel;
 
-public class RedirectViewAndModel extends ViewAndModel {	
-	public RedirectViewAndModel(String redirectUrl) {
+public class Redirect extends ViewAndModel {	
+	public Redirect(String redirectUrl) {
 		super(redirectUrl);
 	}
 	
