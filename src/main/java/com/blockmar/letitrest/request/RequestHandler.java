@@ -15,6 +15,9 @@ import com.blockmar.letitrest.resolver.UrlResolverResult;
 import com.blockmar.letitrest.servlet.DispatcherServletConfig;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
+import com.blockmar.letitrest.views.json.JsonViewAndModel;
+import com.blockmar.letitrest.views.redirect.RedirectViewAndModel;
+import com.blockmar.letitrest.views.redirect.RedirectViewRenderer;
 
 //TODO Refactoring. Can we split this to single responsibility?
 public class RequestHandler {
@@ -70,7 +73,15 @@ public class RequestHandler {
 	private void render(ViewAndModel viewAndModel, HttpServletResponse response) {
 		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
 		if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
-			defaultViewRenderer.render(viewAndModel, response);
+			if(viewRenderer instanceof RedirectViewRenderer) {
+				redirectViewRenderer.render(viewAndModel, response);
+			}
+			else if(viewAndModel instanceof JsonViewAndModel) {
+				jsonViewRenderer.render(viewAndModel, response);
+			}
+			else {
+				defaultViewRenderer.render(viewAndModel, response);
+			}
 		} else {
 			viewRenderer.render(viewAndModel, response);
 		}
@@ -83,18 +94,13 @@ public class RequestHandler {
 			Object methodResult = invokeMethod(urlHandler, request);
 
 			if (methodResult instanceof ViewAndModel) {
-				ViewAndModel viewAndModel = (ViewAndModel) methodResult;
-				// TODO Not a good solution
-				if ("json".equals(viewAndModel.getView().toLowerCase())) {
-					viewAndModel.setViewRenderer(jsonViewRenderer);
-				}
-				return viewAndModel;
+				return (ViewAndModel) methodResult;
 			} else if (methodResult instanceof String) {
 				String methodResultString = (String) methodResult;
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
 					return new ViewAndModel(methodResultString);
 				} else {
-					return createRedirect(methodResultString);
+					return new RedirectViewAndModel(methodResultString);
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -136,13 +142,5 @@ public class RequestHandler {
 			}
 		}
 		return methodResult;
-	}
-
-	private ViewAndModel createRedirect(String methodResultString) {
-		String url = methodResultString.substring(REDIRECT_PREFIX.length())
-				.trim();
-		ViewAndModel viewAndModel = new ViewAndModel(url);
-		viewAndModel.setViewRenderer(redirectViewRenderer);
-		return viewAndModel;
 	}
 }

@@ -21,7 +21,7 @@ public class AnnotationScanner {
 	public void scan(Object controller) {
 		logger.debug("Scanning " + controller.getClass().getCanonicalName());
 		Method[] methods = controller.getClass().getMethods();
-		for (Method method : methods) {
+		for (Method method : methods) {			
 			scanForRequestMapping(controller, method);
 			scanForFallbackRequestMapping(controller, method);
 		}

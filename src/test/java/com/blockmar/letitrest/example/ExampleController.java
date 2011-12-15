@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.blockmar.letitrest.request.annotation.RequestMapping;
 import com.blockmar.letitrest.views.ViewAndModel;
+import com.blockmar.letitrest.views.json.JsonViewAndModel;
 
 public class ExampleController {
 
@@ -32,6 +33,14 @@ public class ExampleController {
 		ViewAndModel viewAndModel = new ViewAndModel("pageNumber");
 		viewAndModel.addAttribute("page", page);
 		viewAndModel.addAttribute("subpage", subpage);
+		return viewAndModel;
+	}
+	
+	@RequestMapping("/json")
+	public ViewAndModel jsonResponse() {
+		ViewAndModel viewAndModel = new JsonViewAndModel();
+		viewAndModel.addAttribute("number", 1);
+		viewAndModel.addAttribute("string", "string");
 		return viewAndModel;
 	}
 }
