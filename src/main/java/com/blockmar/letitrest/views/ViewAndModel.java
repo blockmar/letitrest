@@ -1,5 +1,6 @@
 package com.blockmar.letitrest.views;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,8 +28,7 @@ public class ViewAndModel {
 	}
 
 	public Map<String, Object> getModel() {
-		//TODO Return unmodifiable Map
-		return model;
+		return Collections.unmodifiableMap(model);
 	}
 
 	public void addAttribute(String key, Object value) {
