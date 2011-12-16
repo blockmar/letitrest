@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.blockmar.letitrest.request.annotation.JsonResponse;
 import com.blockmar.letitrest.request.annotation.ParameterPojo;
 import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 import com.blockmar.letitrest.views.ViewAndModel;
@@ -21,14 +22,14 @@ public class MethodInvokationHandler {
 		pojoMapper = new ReflectionPojoMapper();
 	}
 
-	public ViewAndModel invoke(MethodInvokationRequest urlHandler,
+	public Object invoke(MethodInvokationRequest urlHandler,
 			HttpServletRequest request) {
 
 		try {
 			Object methodResult = invokeMethod(urlHandler, request);
 
 			if (methodResult instanceof ViewAndModel) {
-				return (ViewAndModel) methodResult;
+				return methodResult;
 			} else if (methodResult instanceof String) {
 				String methodResultString = (String) methodResult;
 				if (!methodResultString.startsWith(REDIRECT_PREFIX)) {
@@ -36,11 +37,13 @@ public class MethodInvokationHandler {
 				} else {
 					return new Redirect(stripRedirectPrefix(methodResultString));
 				}
+			} else if (methodReturnsJson(urlHandler)) {
+				return methodResult;
 			} else {
 				throw new UnsupportedOperationException(
 						"Can't handle methods with return type: "
 								+ urlHandler.getMethod().getReturnType()
-										.toString());
+										.toString() + ". Did you forget Json-annotation?");
 			}
 
 		} catch (InvocationTargetException e) {
@@ -54,6 +57,10 @@ public class MethodInvokationHandler {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private boolean methodReturnsJson(MethodInvokationRequest urlHandler) {
+		return urlHandler.getMethod().getAnnotation(JsonResponse.class) != null;
 	}
 
 	private String stripRedirectPrefix(String redirect) {

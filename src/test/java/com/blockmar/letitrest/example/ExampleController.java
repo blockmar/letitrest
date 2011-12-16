@@ -1,11 +1,14 @@
 package com.blockmar.letitrest.example;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
+import com.blockmar.letitrest.request.annotation.JsonResponse;
 import com.blockmar.letitrest.request.annotation.ParameterPojo;
 import com.blockmar.letitrest.request.annotation.RequestMapping;
 import com.blockmar.letitrest.views.ViewAndModel;
-import com.blockmar.letitrest.views.json.JsonViewAndModel;
 
 public class ExampleController {
 
@@ -48,10 +51,11 @@ public class ExampleController {
 	}
 	
 	@RequestMapping("/json")
-	public ViewAndModel jsonResponse() {
-		ViewAndModel viewAndModel = new JsonViewAndModel();
-		viewAndModel.addAttribute("number", 1);
-		viewAndModel.addAttribute("string", "string");
-		return viewAndModel;
+	@JsonResponse
+	public Map<String, Object> jsonResponse() {
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("number", 1);
+		response.put("string", "abcd");
+		return response;
 	}
 }

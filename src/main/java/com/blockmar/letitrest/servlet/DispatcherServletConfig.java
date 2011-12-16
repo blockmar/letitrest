@@ -5,9 +5,10 @@ import java.util.Set;
 import com.blockmar.letitrest.request.RequestHandler;
 import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.regexp.PatternUrlResolver;
+import com.blockmar.letitrest.views.JsonRenderer;
 import com.blockmar.letitrest.views.ViewRenderer;
 import com.blockmar.letitrest.views.freemarker.FreemarkerViewRenderer;
-import com.blockmar.letitrest.views.json.JacksonViewRenderer;
+import com.blockmar.letitrest.views.json.JacksonJsonRenderer;
 import com.blockmar.letitrest.views.redirect.RedirectViewRenderer;
 
 public abstract class DispatcherServletConfig {
@@ -26,8 +27,8 @@ public abstract class DispatcherServletConfig {
 		return new RedirectViewRenderer();
 	}
 
-	public ViewRenderer getJsonViewRenderer() {
-		return new JacksonViewRenderer();
+	public JsonRenderer getDefaultJsonRenderer() {
+		return new JacksonJsonRenderer();
 	}
 
 	public RequestHandler getRequestHandler() {

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
+import com.blockmar.letitrest.request.annotation.JsonResponse;
 import com.blockmar.letitrest.request.annotation.ParameterPojo;
 import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 import com.blockmar.letitrest.views.ViewAndModel;
@@ -27,7 +28,7 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("noArguments"), new String[] {});
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		Object viewAndModel = invokationHandler.invoke(invokationRequest,
 				request);
 		assertNotNull(viewAndModel);
 	}
@@ -42,7 +43,7 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("stringArguments"), new String[] { "a", "b" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		Object viewAndModel = invokationHandler.invoke(invokationRequest,
 				request);
 		assertNotNull(viewAndModel);
 	}
@@ -57,7 +58,7 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("mixedArguments"), new String[] { "1", "b", "2.0" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		Object viewAndModel = invokationHandler.invoke(invokationRequest,
 				request);
 		assertNotNull(viewAndModel);
 	}
@@ -72,7 +73,7 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("stringReturnType"), new String[] {});
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		Object viewAndModel = invokationHandler.invoke(invokationRequest,
 				request);
 		assertNotNull(viewAndModel);
 	}
@@ -87,9 +88,8 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("invalidMethod"), new String[] {});
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		invokationHandler.invoke(invokationRequest,
 				request);
-		assertNotNull(viewAndModel);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
@@ -102,9 +102,8 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("invalidMethod"), new String[] { "a", "b" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		invokationHandler.invoke(invokationRequest,
 				request);
-		assertNotNull(viewAndModel);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
@@ -117,9 +116,8 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("mixedArguments"), new String[] { "a", "b" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		invokationHandler.invoke(invokationRequest,
 				request);
-		assertNotNull(viewAndModel);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
@@ -132,11 +130,40 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("invalidParameterType"), new String[] { "b" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		invokationHandler.invoke(invokationRequest,
 				request);
-		assertNotNull(viewAndModel);
 	}
 	
+	@Test(expected = UnsupportedOperationException.class)
+	public void invokingMethodWithUnknownReturnTypeAndNotJsonThrowsException()
+			throws Exception {
+		HttpServletRequest request = EasyMock
+				.createMock(HttpServletRequest.class);
+		EasyMock.replay(request);
+
+		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
+				this, getMethod("notJson"), new String[] {});
+
+		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
+		invokationHandler.invoke(invokationRequest,
+				request);
+	}
+
+	@Test
+	public void invokingMethodJsonAnnotationReturnsJsonData() throws Exception {
+		HttpServletRequest request = EasyMock
+				.createMock(HttpServletRequest.class);
+		EasyMock.replay(request);
+
+		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
+				this, getMethod("asJson"), new String[] {});
+
+		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
+		Object json = invokationHandler.invoke(invokationRequest,
+				request);
+		assertNotNull(json);
+	}
+
 	@Test
 	public void invokingMethodWithRequestPojo() throws Exception {	
 		HttpServletRequest request = EasyMock
@@ -148,7 +175,7 @@ public class MethodInvokationHandlerTest {
 				this, getMethod("requestPojo"), new String[] { "b" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
-		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+		Object viewAndModel = invokationHandler.invoke(invokationRequest,
 				request);
 		assertNotNull(viewAndModel);
 	}
@@ -196,7 +223,16 @@ public class MethodInvokationHandlerTest {
 		assertNotNull(pojo);
 		return new ViewAndModel("");
 	}
+
+	public Object notJson() {
+		return null;
+	}
 	
+	@JsonResponse
+	public Object[] asJson() {
+		return new Object[] { "key", 1 };
+	}
+
 	public String stringReturnType() {
 		return "";
 	}

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -11,8 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import com.blockmar.letitrest.views.ViewAndModel;
-import com.blockmar.letitrest.views.ViewRenderer;
+import com.blockmar.letitrest.views.JsonRenderer;
 
 public class JacksonViewRendererTest {
 	@Test
@@ -27,11 +28,11 @@ public class JacksonViewRendererTest {
 		EasyMock.expect(response.getOutputStream()).andReturn(output);
 		EasyMock.replay(response);
 
-		ViewAndModel viewAndModel = new ViewAndModel("json");
-		viewAndModel.addAttribute("key", "value");
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("key", "value");
 
-		ViewRenderer viewRenderer = new JacksonViewRenderer();
-		viewRenderer.render(viewAndModel, response);
+		JsonRenderer renderer = new JacksonJsonRenderer();
+		renderer.render(json, response);
 		
 		assertEquals("{\"key\":\"value\"}", output.toString());
 	}
@@ -48,6 +49,7 @@ public class JacksonViewRendererTest {
 			outputStream.write(b);
 		}
 		
+		@Override
 		public String toString() {
 			return outputStream.toString();
 		}

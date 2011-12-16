@@ -8,30 +8,30 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.AnnotationScanner;
-import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.resolver.MethodInvokationRequest;
+import com.blockmar.letitrest.resolver.UrlResolver;
 import com.blockmar.letitrest.servlet.DispatcherServletConfig;
+import com.blockmar.letitrest.views.JsonRenderer;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.ViewRenderer;
-import com.blockmar.letitrest.views.json.JsonViewAndModel;
 import com.blockmar.letitrest.views.redirect.Redirect;
 
 public class RequestHandler {
 
 	private final UrlResolver urlResolver;
-	
+
 	private final MethodInvokationHandler invokationHandler;
 
 	private final ViewRenderer defaultViewRenderer;
 	private final ViewRenderer redirectViewRenderer;
-	private final ViewRenderer jsonViewRenderer;
+	private final JsonRenderer jsonRenderer;
 
 	@Inject
 	public RequestHandler(DispatcherServletConfig servletConfig) {
 		this.urlResolver = servletConfig.getUrlResolver();
 		this.defaultViewRenderer = servletConfig.getDefaultViewRenderer();
 		this.redirectViewRenderer = servletConfig.getRedirectViewRenderer();
-		this.jsonViewRenderer = servletConfig.getJsonViewRenderer();
+		this.jsonRenderer = servletConfig.getDefaultJsonRenderer();
 		this.invokationHandler = new MethodInvokationHandler();
 
 		registerControllers(servletConfig.getControllers());
@@ -64,22 +64,25 @@ public class RequestHandler {
 
 	private void renderUrlHandler(MethodInvokationRequest urlHandler,
 			HttpServletRequest request, HttpServletResponse response) {
-		ViewAndModel viewAndModel = invokationHandler.invoke(urlHandler, request);
-		render(viewAndModel, response);
+		Object invokationResult = invokationHandler.invoke(urlHandler, request);
+		render(invokationResult, response);
 	}
 
-	private void render(ViewAndModel viewAndModel, HttpServletResponse response) {
-		ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
-		if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
-			if (viewAndModel instanceof Redirect) {
-				redirectViewRenderer.render(viewAndModel, response);
-			} else if (viewAndModel instanceof JsonViewAndModel) {
-				jsonViewRenderer.render(viewAndModel, response);
+	private void render(Object objectToRender, HttpServletResponse response) {
+		if (objectToRender instanceof ViewAndModel) {
+			ViewAndModel viewAndModel = (ViewAndModel) objectToRender;
+			ViewRenderer viewRenderer = viewAndModel.getViewRenderer();
+			if (viewRenderer == ViewAndModel.DEFAULT_VIEW_RENDERER) {
+				if (viewAndModel instanceof Redirect) {
+					redirectViewRenderer.render(viewAndModel, response);
+				} else {
+					defaultViewRenderer.render(viewAndModel, response);
+				}
 			} else {
-				defaultViewRenderer.render(viewAndModel, response);
+				viewRenderer.render(viewAndModel, response);
 			}
 		} else {
-			viewRenderer.render(viewAndModel, response);
+			jsonRenderer.render(objectToRender, response);
 		}
 	}
 }
