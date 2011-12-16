@@ -59,6 +59,13 @@ public class ReflectionPojoMapper {
 				throw new IllegalArgumentException(
 						"Failed to cast parameter value to Integer: " + value);
 			}
+		} else if (parameterType.isAssignableFrom(Double.class)) {
+			try {
+				parameter = new Double(value);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException(
+						"Failed to cast parameter value to Integer: " + value);
+			}
 		} else {
 			throw new IllegalArgumentException("Parameter type not supported: "
 					+ parameterType.getName());

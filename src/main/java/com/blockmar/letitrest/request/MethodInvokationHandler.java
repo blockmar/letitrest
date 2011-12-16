@@ -105,6 +105,15 @@ public class MethodInvokationHandler {
 								"Failed to cast parameter value to Integer: "
 										+ value);
 					}
+				} else if (parameterType.isAssignableFrom(Double.class)) {
+					String value = urlParams[urlParamCount++];
+					try {
+						result[position] = new Double(value);
+					} catch (NumberFormatException e) {
+						throw new IllegalArgumentException(
+								"Failed to cast parameter value to Integer: "
+										+ value);
+					}
 				} else if (isPojoParameter(parameterAnnotations[position])) {
 					result[position] = populatePojo(parameterType, request);
 				} else {

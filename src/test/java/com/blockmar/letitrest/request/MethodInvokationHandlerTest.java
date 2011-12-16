@@ -54,7 +54,7 @@ public class MethodInvokationHandlerTest {
 		EasyMock.replay(request);
 
 		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
-				this, getMethod("mixedArguments"), new String[] { "1", "b" });
+				this, getMethod("mixedArguments"), new String[] { "1", "b", "2.0" });
 
 		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
 		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
@@ -178,7 +178,7 @@ public class MethodInvokationHandlerTest {
 		return new ViewAndModel("");
 	}
 	
-	public ViewAndModel mixedArguments(Integer a, String b) {
+	public ViewAndModel mixedArguments(Integer a, String b, Double c) {
 		assertNotNull(a);
 		assertNotNull(b);
 		return new ViewAndModel("");

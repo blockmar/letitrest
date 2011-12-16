@@ -17,6 +17,7 @@ public class ReflectionPojoMapperTest {
 				.createMock(HttpServletRequest.class);
 		HashMap<String, String[]> parameterMap = new HashMap<String, String[]>();
 		parameterMap.put("age", new String[]{ "1" });
+		parameterMap.put("size", new String[]{ "2.0" });
 		parameterMap.put("name", new String[]{ "aaa" });
 		parameterMap.put("nomethod", new String[]{ "1234" });
 		EasyMock.expect(request.getParameterMap()).andReturn(
@@ -50,6 +51,7 @@ public class ReflectionPojoMapperTest {
 	public static class TestPojo {
 		private String name;
 		private Integer age;
+		private Double size;
 
 		public String getName() {
 			return name;
@@ -65,6 +67,14 @@ public class ReflectionPojoMapperTest {
 
 		public void setAge(Integer age) {
 			this.age = age;
+		}
+		
+		public Double getSize() {
+			return size;
+		}
+
+		public void setSize(Double size) {
+			this.size = size;
 		}
 	}
 }
