@@ -13,9 +13,10 @@
     </ol>
     <li><a href="/page/2">Page 2</a></li>
 </ol>
-<p>Post example:</p>
+<p>POST- and GET-parameter examples:</p>
 <ul>
-    <li><a href="/name">Tell me your name</a></li>
+    <li><a href="/name">Basic</a></li>
+    <li><a href="/advanced/name">Using pojo</a></li>
 </ul>
 <p>Json data: <a href="/json">Example</a></p>
 </body>

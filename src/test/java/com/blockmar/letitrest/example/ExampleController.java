@@ -17,8 +17,10 @@ public class ExampleController {
 	@RequestMapping("/name")
 	public ViewAndModel simpleForm(HttpServletRequest request) {
 		String name = request.getParameter("name");
+		String age = request.getParameter("age");
 		ViewAndModel viewAndModel = new ViewAndModel("name");
 		viewAndModel.addAttribute("name", name);
+		viewAndModel.addAttribute("age", age);
 		return viewAndModel;
 	}
 	
