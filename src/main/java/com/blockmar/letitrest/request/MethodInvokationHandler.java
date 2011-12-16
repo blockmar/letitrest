@@ -1,10 +1,12 @@
 package com.blockmar.letitrest.request;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.blockmar.letitrest.request.annotation.ParameterPojo;
 import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 import com.blockmar.letitrest.views.ViewAndModel;
 import com.blockmar.letitrest.views.redirect.Redirect;
@@ -65,7 +67,7 @@ public class MethodInvokationHandler {
 			methodResult = method.invoke(urlHandler.getInstance(), request);
 		} else {
 			String[] urlParams = urlHandler.getUrlParameters();
-			Object[] methodParameters = prepareParameters(parameterTypes,
+			Object[] methodParameters = prepareParameters(method, request,
 					urlParams);
 			methodResult = method.invoke(urlHandler.getInstance(),
 					methodParameters);
@@ -73,8 +75,11 @@ public class MethodInvokationHandler {
 		return methodResult;
 	}
 
-	private Object[] prepareParameters(Class<?>[] parameterTypes,
-			String[] urlParams) {
+	private Object[] prepareParameters(Method method,
+			HttpServletRequest request, String[] urlParams) {
+
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 
 		Object[] result = new Object[parameterTypes.length];
 
@@ -82,6 +87,7 @@ public class MethodInvokationHandler {
 		try {
 			for (int position = 0; position < parameterTypes.length; position++) {
 				Class<?> parameterType = parameterTypes[position];
+
 				if (parameterType.isAssignableFrom(String.class)) {
 					result[position] = urlParams[urlParamCount++];
 				} else if (parameterType.isAssignableFrom(Integer.class)) {
@@ -93,19 +99,46 @@ public class MethodInvokationHandler {
 								"Failed to cast parameter value to Integer: "
 										+ value);
 					}
+				} else if (isPojoParameter(parameterAnnotations[position])) {
+					result[position] = populatePojo(parameterType, request);
+				} else {
+					throw new IllegalArgumentException(
+							"Parameter type not supported: "
+									+ parameterType.getName());
 				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			throw new IllegalArgumentException(
-					"Missmatched number of parametrs in methos signature");
+					"Missmatched number of parameters in method signature");
 		}
 
 		if (urlParamCount != urlParams.length) {
 			throw new IllegalArgumentException(
-					"Missmatched number of parametrs in methos signature");
+					"Missmatched number of parameters in method signature");
 		}
 
 		return result;
+	}
+
+	private Object populatePojo(Class<?> parameterType,
+			HttpServletRequest request) {
+		try {
+			Object pojo = parameterType.newInstance();
+			return pojo;
+		} catch (Exception e) {
+			throw new IllegalArgumentException(
+					"Failed to populate pojo parameter", e);
+		}
+	}
+
+	private boolean isPojoParameter(Annotation[] annotations) {
+		for (Annotation annotation : annotations) {
+			if (annotation.annotationType().isAssignableFrom(
+					ParameterPojo.class)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean hasNoParameters(Class<?>[] parameterTypes) {

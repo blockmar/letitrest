@@ -3,12 +3,14 @@ package com.blockmar.letitrest.request;
 import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
 
+import com.blockmar.letitrest.request.annotation.ParameterPojo;
 import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 import com.blockmar.letitrest.views.ViewAndModel;
 
@@ -119,6 +121,36 @@ public class MethodInvokationHandlerTest {
 		assertNotNull(viewAndModel);
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void invokingMethodWithInvalidParameterTypeThrowsException() throws Exception {
+		HttpServletRequest request = EasyMock
+				.createMock(HttpServletRequest.class);
+		EasyMock.replay(request);
+
+		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
+				this, getMethod("invalidParameterType"), new String[] { "b" });
+
+		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
+		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+				request);
+		assertNotNull(viewAndModel);
+	}
+	
+	@Test
+	public void invokingMethodWithRequestPojo() throws Exception {
+		HttpServletRequest request = EasyMock
+				.createMock(HttpServletRequest.class);
+		EasyMock.replay(request);
+
+		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
+				this, getMethod("requestPojo"), new String[] { "b" });
+
+		MethodInvokationHandler invokationHandler = new MethodInvokationHandler();
+		ViewAndModel viewAndModel = invokationHandler.invoke(invokationRequest,
+				request);
+		assertNotNull(viewAndModel);
+	}
+	
 	private Method getMethod(String methodName) {
 		//Finds methosd regardless of parameters
 		try {
@@ -139,10 +171,14 @@ public class MethodInvokationHandlerTest {
 	}
 
 	public ViewAndModel stringArguments(String a, String b) {
+		assertNotNull(a);
+		assertNotNull(b);
 		return new ViewAndModel("");
 	}
 	
 	public ViewAndModel mixedArguments(Integer a, String b) {
+		assertNotNull(a);
+		assertNotNull(b);
 		return new ViewAndModel("");
 	}
 	
@@ -150,7 +186,34 @@ public class MethodInvokationHandlerTest {
 		return new ViewAndModel("");
 	}
 	
+	public ViewAndModel invalidParameterType(Date date) {
+		return new ViewAndModel("");
+	}
+	
+	public ViewAndModel requestPojo(String a, @ParameterPojo Pojo pojo) {
+		assertNotNull(pojo);
+		return new ViewAndModel("");
+	}
+	
 	public String stringReturnType() {
 		return "";
+	}
+	
+	public static class Pojo {
+		private String name;
+		private int age;
+		
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public int getAge() {
+			return age;
+		}
+		public void setAge(int age) {
+			this.age = age;
+		}
 	}
 }
