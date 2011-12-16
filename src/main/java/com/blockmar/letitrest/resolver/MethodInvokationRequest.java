@@ -2,13 +2,13 @@ package com.blockmar.letitrest.resolver;
 
 import java.lang.reflect.Method;
 
-public class UrlResolverResult {
+public class MethodInvokationRequest {
 	
 	private final Object instance;
 	private final Method method;
 	private final String[] urlParams;
 
-	public UrlResolverResult(Object instance, Method method, String[] urlParams) {
+	public MethodInvokationRequest(Object instance, Method method, String[] urlParams) {
 		this.instance = instance;
 		this.method = method;
 		this.urlParams = urlParams;

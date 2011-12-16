@@ -15,7 +15,7 @@ import com.blockmar.letitrest.request.RequestMethod;
 import com.blockmar.letitrest.request.exception.NotFoundException;
 import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
-import com.blockmar.letitrest.resolver.UrlResolverResult;
+import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 
 public class PatternUrlResolver implements UrlResolver {
 
@@ -28,7 +28,7 @@ public class PatternUrlResolver implements UrlResolver {
 	private final Map<RequestMethod, Handler> fallbackHandlers = new HashMap<RequestMethod, Handler>();
 
 	@Override
-	public UrlResolverResult resolveUrl(String url, RequestMethod requestMethod)
+	public MethodInvokationRequest resolveUrl(String url, RequestMethod requestMethod)
 			throws NotFoundException {
 
 		// TODO Is this good or just a performance theif.
@@ -109,7 +109,7 @@ public class PatternUrlResolver implements UrlResolver {
 		}
 	}
 
-	private UrlResolverResult createResolverResult(
+	private MethodInvokationRequest createResolverResult(
 			PatternHandler patternHandler, Matcher matcher) {
 
 		MatchResult result = matcher.toMatchResult();
@@ -119,12 +119,12 @@ public class PatternUrlResolver implements UrlResolver {
 			urlParams[i] = result.group(i + 1); // Group 0 is entire match
 		}
 
-		return new UrlResolverResult(patternHandler.getInstance(),
+		return new MethodInvokationRequest(patternHandler.getInstance(),
 				patternHandler.getMethod(), urlParams);
 	}
 
-	private UrlResolverResult createResolverResult(Handler fallbackHandler) {
-		return new UrlResolverResult(fallbackHandler.getInstance(),
+	private MethodInvokationRequest createResolverResult(Handler fallbackHandler) {
+		return new MethodInvokationRequest(fallbackHandler.getInstance(),
 				fallbackHandler.getMethod(), new String[0]);
 	}
 

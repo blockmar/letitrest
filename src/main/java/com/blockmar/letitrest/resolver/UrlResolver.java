@@ -11,6 +11,6 @@ public interface UrlResolver {
 	
 	public void registerFallbackUrl(Object classInstance, Method method, RequestMethod... requestMethods);
 	
-	public UrlResolverResult resolveUrl(String url, RequestMethod method) throws NotFoundException;
+	public MethodInvokationRequest resolveUrl(String url, RequestMethod method) throws NotFoundException;
 	
 }

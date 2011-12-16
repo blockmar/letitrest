@@ -8,7 +8,7 @@ import com.blockmar.letitrest.request.RequestMethod;
 import com.blockmar.letitrest.request.exception.NotFoundException;
 import com.blockmar.letitrest.request.exception.RequestMethodNotSupportedException;
 import com.blockmar.letitrest.resolver.UrlResolver;
-import com.blockmar.letitrest.resolver.UrlResolverResult;
+import com.blockmar.letitrest.resolver.MethodInvokationRequest;
 
 public class PatternUrlResolverTest {
 
@@ -18,7 +18,7 @@ public class PatternUrlResolverTest {
 		resolver.registerUrl("/test/([0-9]+)", this,
 				this.getClass().getMethod("getReturn"), RequestMethod.GET);
 
-		UrlResolverResult resolveUrl = resolver.resolveUrl("/test/1234",
+		MethodInvokationRequest resolveUrl = resolver.resolveUrl("/test/1234",
 				RequestMethod.GET);
 		assertEquals("1234", resolveUrl.getUrlParameters()[0]);
 	}
@@ -49,9 +49,9 @@ public class PatternUrlResolverTest {
 		resolver.registerUrl("/test", this,
 				this.getClass().getMethod("postReturn"), RequestMethod.POST);
 
-		UrlResolverResult resolvGet = resolver.resolveUrl("/test",
+		MethodInvokationRequest resolvGet = resolver.resolveUrl("/test",
 				RequestMethod.GET);
-		UrlResolverResult resolvPost = resolver.resolveUrl("/test",
+		MethodInvokationRequest resolvPost = resolver.resolveUrl("/test",
 				RequestMethod.POST);
 
 		assertEquals("getReturn", resolvGet.getMethod().getName());
