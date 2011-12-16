@@ -15,6 +15,12 @@ public class MethodInvokationHandler {
 
 	private static final String REDIRECT_PREFIX = "redirect:";
 
+	private final ReflectionPojoMapper pojoMapper;
+
+	public MethodInvokationHandler() {
+		pojoMapper = new ReflectionPojoMapper();
+	}
+
 	public ViewAndModel invoke(MethodInvokationRequest urlHandler,
 			HttpServletRequest request) {
 
@@ -120,15 +126,8 @@ public class MethodInvokationHandler {
 		return result;
 	}
 
-	private Object populatePojo(Class<?> parameterType,
-			HttpServletRequest request) {
-		try {
-			Object pojo = parameterType.newInstance();
-			return pojo;
-		} catch (Exception e) {
-			throw new IllegalArgumentException(
-					"Failed to populate pojo parameter", e);
-		}
+	private Object populatePojo(Class<?> pojoClass, HttpServletRequest request) {
+		return pojoMapper.map(pojoClass, request);
 	}
 
 	private boolean isPojoParameter(Annotation[] annotations) {

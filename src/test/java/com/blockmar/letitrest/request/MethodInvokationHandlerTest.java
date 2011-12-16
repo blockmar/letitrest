@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -137,9 +138,10 @@ public class MethodInvokationHandlerTest {
 	}
 	
 	@Test
-	public void invokingMethodWithRequestPojo() throws Exception {
+	public void invokingMethodWithRequestPojo() throws Exception {	
 		HttpServletRequest request = EasyMock
 				.createMock(HttpServletRequest.class);
+		EasyMock.expect(request.getParameterMap()).andReturn(new HashMap<String, String[]>());
 		EasyMock.replay(request);
 
 		MethodInvokationRequest invokationRequest = new MethodInvokationRequest(
@@ -199,21 +201,6 @@ public class MethodInvokationHandlerTest {
 		return "";
 	}
 	
-	public static class Pojo {
-		private String name;
-		private int age;
-		
-		public String getName() {
-			return name;
-		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		public int getAge() {
-			return age;
-		}
-		public void setAge(int age) {
-			this.age = age;
-		}
+	public static class Pojo {		
 	}
 }
